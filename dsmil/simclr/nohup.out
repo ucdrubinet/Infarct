@@ -1,0 +1,62 @@
+Running on: cuda
+Size train loader -->  5084
+Size val loader -->  564
+/cache/lzhengfe/anaconda3/envs/dsmil/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/cache/lzhengfe/anaconda3/envs/dsmil/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=None`.
+  warnings.warn(msg)
+Feature extractor: resnet18
+Pre-trained weights not found. Training from scratch.
+Epoch n:  0
+saved
+/cache/lzhengfe/anaconda3/envs/dsmil/lib/python3.10/site-packages/torch/optim/lr_scheduler.py:814: UserWarning: To get the last learning rate computed by the scheduler, please use `get_last_lr()`.
+  warnings.warn("To get the last learning rate computed by the scheduler, "
+Epoch n:  1
+saved
+Epoch n:  2
+saved
+Epoch n:  3
+saved
+Epoch n:  4
+saved
+Epoch n:  5
+saved
+Epoch n:  6
+saved
+Epoch n:  7
+saved
+Epoch n:  8
+saved
+Epoch n:  9
+saved
+Epoch n:  10
+saved
+Epoch n:  11
+saved
+Epoch n:  12
+saved
+Epoch n:  13
+saved
+Epoch n:  14
+Epoch n:  15
+saved
+Epoch n:  16
+saved
+Epoch n:  17
+saved
+Epoch n:  18
+Epoch n:  19
+saved
+Epoch n:  20
+saved
+Epoch n:  21
+saved
+Epoch n:  22
+saved
+Epoch n:  23
+saved
+Epoch n:  24
+saved
+Epoch n:  25
+saved
+Epoch n:  26
