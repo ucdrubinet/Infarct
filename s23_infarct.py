@@ -163,7 +163,7 @@ def fit(model, loss_fn, optimizer, train_loader, val_loader, num_epochs, schedul
                 total_correct += (val_predicted == labels).sum().item()
 
                 val_predicted_full = val_predicted_full + val_predicted.cpu().data.numpy().tolist()
-                val_labels_full = val_labels_full + val_labels_full.cpu().data.numpy().tolist()
+                val_labels_full = val_labels_full + labels.cpu().data.numpy().tolist()
                 
                 
             total_train = 0
@@ -179,7 +179,7 @@ def fit(model, loss_fn, optimizer, train_loader, val_loader, num_epochs, schedul
                 total_train_correct += (train_predicted == labels).sum().item()
 
                 train_predicted_full = train_predicted_full + train_predicted.cpu().data.numpy().tolist()
-                train_labels_full = train_labels_full + train_labels_full.cpu().data.numpy().tolist()
+                train_labels_full = train_labels_full + labels.cpu().data.numpy().tolist()
                 
                 
         print("END OF EPOCH")
