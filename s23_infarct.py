@@ -45,17 +45,21 @@ class Patches(Dataset):
         bg_ct = 0
         
         for wsi in self.WSI:
+            heal_ct_case = 0
+            bg_ct_case = 0
             if wsi in self.cases:
                 for cls in os.listdir(self.path+wsi):
                     for image in os.listdir(self.path+wsi+'/'+cls):
                         im_path = self.path+wsi+'/'+cls+'/'+image
                         im_paths.append(im_path)
-                        if cls == 'BG':
+                        if cls == 'BG' and bg_ct_case <= 300:
                             gt.append(0)
                             bg_ct += 1
-                        elif cls == 'Heal':
+                            bg_ct_case += 1
+                        elif cls == 'Heal' and heal_ct_case <= 300:
                             gt.append(1)
                             heal_ct += 1
+                            heal_ct_case += 1
                         elif cls == 'Inf':
                             gt.append(2)
                             inf_ct += 1
@@ -117,7 +121,7 @@ def fit(model, loss_fn, optimizer, train_loader, val_loader, num_epochs, schedul
     for epoch in range(num_epochs):
         if epoch != 0:
             scheduler.step()
-            loss_epoch.append(f_loss.item())
+            loss_epoch.append(loss.item())
             train_epoch.append((total_train_correct/total_train))
             val_epoch.append((total_correct/total_val))
             
@@ -186,13 +190,13 @@ def fit(model, loss_fn, optimizer, train_loader, val_loader, num_epochs, schedul
         val_dict = classification_report(val_labels_full, val_predicted_full, labels=[0,1,2],output_dict=True)
         train_dict = classification_report(train_labels_full, train_predicted_full, labels=[0,1,2],output_dict=True)
 
-        val0_score = val_dict['0']['f1-score']
-        val1_score = val_dict['1']['f1-score']
-        val2_score = val_dict['2']['f1-score']
+        val0_score = val_dict['0']['f1-score'] + 0.0001
+        val1_score = val_dict['1']['f1-score'] + 0.0001
+        val2_score = val_dict['2']['f1-score'] + 0.0001
         
-        train0_score = train_dict['0']['f1-score']
-        train1_score = train_dict['1']['f1-score']
-        train2_score = train_dict['2']['f1-score']
+        train0_score = train_dict['0']['f1-score'] + 0.0001
+        train1_score = train_dict['1']['f1-score'] + 0.0001
+        train2_score = train_dict['2']['f1-score'] + 0.0001
         
         print("Validation Set: ")
         print("Model Score = ", (total_correct/total_val)*val0_score*val1_score*val2_score)
@@ -265,8 +269,12 @@ model.fc = nn.Linear(512, 3)
 
 optimizer = torch.optim.Adam(model.parameters(),lr = 0.01)
 
-train_loader = DataLoader(trainset, batch_size=batch_size,shuffle=True)
-val_loader = DataLoader(valset, batch_size=batch_size,shuffle=True)
+# sampler = torch.utils.data.sampler.WeightedRandomSampler(
+#                 weights=[0.4/585032,0.4/801686, 0.2/10679],
+#                 num_samples=len(trainset), replacement=True)
+
+train_loader = DataLoader(trainset, batch_size=batch_size, shuffle=True)
+val_loader = DataLoader(valset,batch_size=batch_size,shuffle=True)
 
 loss_epoch, train_epoch, val_epoch = fit(model, loss_f, optimizer, train_loader, val_loader, num_epochs,PATH = './saved_models/resnet18_512.pt')
 
