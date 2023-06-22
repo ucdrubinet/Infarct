@@ -50,19 +50,26 @@ class Patches(Dataset):
             if wsi in self.cases:
                 for cls in os.listdir(self.path+wsi):
                     for image in os.listdir(self.path+wsi+'/'+cls):
-                        im_path = self.path+wsi+'/'+cls+'/'+image
-                        im_paths.append(im_path)
                         if cls == 'BG' and bg_ct_case <= 300:
                             gt.append(0)
                             bg_ct += 1
                             bg_ct_case += 1
+                            
+                            im_path = self.path+wsi+'/'+cls+'/'+image
+                            im_paths.append(im_path)
                         elif cls == 'Heal' and heal_ct_case <= 300:
                             gt.append(1)
                             heal_ct += 1
                             heal_ct_case += 1
+                            
+                            im_path = self.path+wsi+'/'+cls+'/'+image
+                            im_paths.append(im_path)
                         elif cls == 'Inf':
                             gt.append(2)
                             inf_ct += 1
+                            
+                            im_path = self.path+wsi+'/'+cls+'/'+image
+                            im_paths.append(im_path)
                             
         print("Total number of tiles: ")
         print("Heal = ", heal_ct, "| Inf = ", inf_ct, "| BG = ", bg_ct)
