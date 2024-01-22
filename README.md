@@ -9,9 +9,6 @@
 If you have any questions/suggestions or find any bugs,
 please submit a GitHub issue.
 
-## Prerequisites
-
-
 ## Credit
 * [plaquebox-paper (original repo)](https://github.com/keiserlab/plaquebox-paper)
 * [plaquebox-paper (fork with some code dev)](https://github.com/KolinGuo/plaquebox-paper)
