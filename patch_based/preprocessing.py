@@ -287,7 +287,7 @@ def fill_contours(arr):
 
 
 def build_maks(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames):
-	gt_df = pd.read_csv('gt.csv')
+	gt_df = pd.read_csv('../gt.csv')
 
 	for imagename in tqdm(imagenames[:]):
 	    start = time.time()
@@ -479,7 +479,7 @@ def build_maks(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,
 
 
 def find_BG(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR):
-	MODEL_SEG_DIR = './patched_512_NewAnnotation+preprocess_ResNet18_Feb12.pt'
+	MODEL_SEG_DIR = '../BrainSec.pt'
 
 	seg_model = torchvision.models.resnet18()
 	seg_model.fc = nn.Linear(512, 3)
@@ -592,7 +592,7 @@ def classify_tiles(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Process some integers.")
+    parser = argparse.ArgumentParser(description="Preprocess parameters.")
 
     # Define arguments with their default values
     parser.add_argument("--tile_size", type=int, default=6144, help="Tile size")
@@ -630,7 +630,7 @@ def main():
 
 
     if not os.path.exists(WSI_DIR):
-    print("WSI folder does not exist, script should stop now")
+    	print("WSI folder does not exist, script should stop now")
 	else:
 	    if not os.path.exists(SEGMENTATION_TILE_DIR):
 	        print("Tile folder you provided us does not exist, being created now...")

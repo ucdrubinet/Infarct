@@ -22,7 +22,7 @@ def th_delete(tensor, indices):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Training parameters")
+    parser = argparse.ArgumentParser(description="Heatmap generation parameters")
 
     # Define arguments with their default values
     parser.add_argument("--model", type=str, default='r18', help="Choose model: r18, swinv2, or wrn50.")
@@ -49,6 +49,7 @@ def main():
     print(f"Path to saved heatmaps : {args.save_np_dir}")
 
     if args.multiFOV == 1:
+    	print("MultiFOV selected")
     	print(f"Path to smaller FOV saved model : {args.smaller_model_path}")
     
     print(f"Batch size: {args.bs}")

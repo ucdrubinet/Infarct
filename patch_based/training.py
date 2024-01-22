@@ -301,7 +301,7 @@ def main():
     print(f"Path to saved model after training: {args.save_path}")
     print(f"Batch size: {args.bs}")
     print(f"Epochs: {args.ep}")
-    print(f"LEarning rate: {args.lr}")
+    print(f"Learning rate: {args.lr}")
 
     MODEL = args.model
 	SEGMENTATION_TILE_DIR = args.segmentation_tile_dir
