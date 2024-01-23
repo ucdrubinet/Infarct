@@ -43,7 +43,7 @@ support [`argparse`](https://docs.python.org/3/library/argparse.html).
 That is, input arguments can be specified to change the default behavior.
 
 ## Credit
-* [plaquebox-paper (original repo)](https://github.com/keiserlab/plaquebox-paper)
+* [plaquebox-paper](https://github.com/keiserlab/plaquebox-paper)
 * [BrainSec](https://github.com/ucdrubinet/BrainSec/tree/master)
 * [pyvips](https://libvips.github.io/pyvips/): Image processing for large
 TIFF-based image.
