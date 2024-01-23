@@ -106,8 +106,8 @@ def npy_to_multi_model_image(p,filename, threshold, cyan_rule='complete_agreemen
             elif cyan_rule == 'confidence_threshold':
                 is_cyan = check_any_model_confidence(data, i, j, conf_threshold)
             else:
-            	print("Name chosen for MultiFOV committee rule was incorrect, choosing complete_agreement")
-            	is_cyan = check_complete_agreement(data, i, j, threshold)
+                print("Name chosen for MultiFOV committee rule was incorrect, choosing complete_agreement")
+                is_cyan = check_complete_agreement(data, i, j, threshold)
             
             # Apply color based on classification
             if first_model_max_class == 0:
@@ -551,10 +551,10 @@ def run(MASK_DIR,WSI_DIR,HEATMAP_DIR,gtdf,scale_parameters,distance_threshold,ar
 
     for numpy_map in os.listdir(NP_MAP_DIR):
 
-    	if isMultiFOV:
-    		npy_to_multi_model_image(HEATMAP_DIR+numpy_map.split('.')[0]+'.png',NP_MAP_DIR+numpy_map,predconf,cyan_rule=rule,n=n_rule,conf_threshold=conf_rule)
-    	else:
-        	npy_to_image(HEATMAP_DIR+numpy_map.split('.')[0]+'.png',NP_MAP_DIR+numpy_map,predconf)
+        if isMultiFOV:
+            npy_to_multi_model_image(HEATMAP_DIR+numpy_map.split('.')[0]+'.png',NP_MAP_DIR+numpy_map,predconf,cyan_rule=rule,n=n_rule,conf_threshold=conf_rule)
+        else:
+            npy_to_image(HEATMAP_DIR+numpy_map.split('.')[0]+'.png',NP_MAP_DIR+numpy_map,predconf)
     
     for heatmap_pt in sorted(os.listdir(HEATMAP_DIR)):
         caseID = heatmap_pt.split('.')[0]
@@ -853,20 +853,20 @@ def main():
 
     # Define arguments with their default values
     parser.add_argument("--heatmap_dir", type=str, default='./Infseg/', help="Directory for heatmap .npy files")
-	parser.add_argument("--scale_parameters", type=bool, default=False, help="To use micrometers instead of pixel for parameters")
-	parser.add_argument("--dist_threshold", type=int, default=50, help="Distance threshold for grouping connected components")
-	parser.add_argument("--area_threshold", type=int, default=50, help="Area threshold for filtering small predictions")
-	parser.add_argument("--pred_detection_threshold", type=int, default=5, help="Area threshold for bounding box placement in postprocessing")
-	parser.add_argument("--kernel_size", type=int, default=4, help="Kernel size for morphological operations")
-	parser.add_argument("--pred_conf", type=float, default=0.95, help="Prediction confidence threshold for patchwise prediction")
-	parser.add_argument("--com_rule", type=str, default='complete_agreement', help="Commitee rule for MultiFOV patchwise prediction. Options: complete_agreement, n_agreement, and confidence_threshold")
-	parser.add_argument("--n_rule", type=int, default=2, help="N value for committee rule")
-	parser.add_argument("--conf_rule", type=float, default=0.9, help="Prediction confidence value for committee rule")
+    parser.add_argument("--scale_parameters", type=bool, default=False, help="To use micrometers instead of pixel for parameters")
+    parser.add_argument("--dist_threshold", type=int, default=50, help="Distance threshold for grouping connected components")
+    parser.add_argument("--area_threshold", type=int, default=50, help="Area threshold for filtering small predictions")
+    parser.add_argument("--pred_detection_threshold", type=int, default=5, help="Area threshold for bounding box placement in postprocessing")
+    parser.add_argument("--kernel_size", type=int, default=4, help="Kernel size for morphological operations")
+    parser.add_argument("--pred_conf", type=float, default=0.95, help="Prediction confidence threshold for patchwise prediction")
+    parser.add_argument("--com_rule", type=str, default='complete_agreement', help="Commitee rule for MultiFOV patchwise prediction. Options: complete_agreement, n_agreement, and confidence_threshold")
+    parser.add_argument("--n_rule", type=int, default=2, help="N value for committee rule")
+    parser.add_argument("--conf_rule", type=float, default=0.9, help="Prediction confidence value for committee rule")
 
-	parser.add_argument("--multiFOV", type=int, default=0, help="0 for single FOV, 1 for multiFOV")
-	parser.add_argument("--WSI_level_threshold", type=int, default=5000, help="Threshold (in micrometers) for detection to be turned into WSI level label")
-	parser.add_argument("--wsi_dir", type=str, default='../Infarct_dataset/val/', help="Directory of Whole Slide Images")
-	parser.add_argument("--mask_dir", type=str, default='masks/', help="Directory for mask files")
+    parser.add_argument("--multiFOV", type=int, default=0, help="0 for single FOV, 1 for multiFOV")
+    parser.add_argument("--WSI_level_threshold", type=int, default=5000, help="Threshold (in micrometers) for detection to be turned into WSI level label")
+    parser.add_argument("--wsi_dir", type=str, default='../Infarct_dataset/val/', help="Directory of Whole Slide Images")
+    parser.add_argument("--mask_dir", type=str, default='masks/', help="Directory for mask files")
 
 
     # Parse the arguments
@@ -881,10 +881,10 @@ def main():
     print(f"Kernel size for morphological operations: {args.kernel_size}")
     print(f"Prediction confidence: {args.pred_conf}")
     if args.multiFOV == 1:
-    	print("MultiFOV selected")
-	    print(f"Committee rule: {args.com_rule}")
-	    print(f"N value for committee rule: {args.n_rule}")
-	    print(f"Prediction confidence value for committee rule: {args.conf_rule}")
+        print("MultiFOV selected")
+        print(f"Committee rule: {args.com_rule}")
+        print(f"N value for committee rule: {args.n_rule}")
+        print(f"Prediction confidence value for committee rule: {args.conf_rule}")
     print(f"Threshold for WSI level prediction: {args.WSI_level_threshold}")
     print(f"WSI tiled directory: {args.wsi_dir}")
     print(f"Binary mask directory: {args.mask_dir}")
@@ -906,9 +906,8 @@ def main():
     WSI_DIR = args.wsi_dir
     MASK_DIR = args.mask_dir
 
-	gtdf = pd.read_csv('../gt_plus_wmr_pvs.csv')
-
-	run(MASK_DIR,WSI_DIR,HEATMAP_DIR,gtdf,scale_parameters,distance_threshold,area_thresh_par,threshold_area,kernelsz,predconf,rule,isMultiFOV,micrometer_diameter,n_rule,conf_rule)
+    gtdf = pd.read_csv('gt_plus_wmr_pvs.csv')
+    run(MASK_DIR,WSI_DIR,HEATMAP_DIR,gtdf,scale_parameters,distance_threshold,area_thresh_par,threshold_area,kernelsz,predconf,rule,isMultiFOV,micrometer_diameter,n_rule,conf_rule)
 
 
 if __name__ == "__main__":

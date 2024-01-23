@@ -572,10 +572,10 @@ def classify_tiles(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_
 	                x1 = int(tile.split('_')[3])
 
 	                if wsi_gt == 1:
-	                    if np.sum(np.sum(mask[y0:y1,x0:x1])) >= (((TILE_SIZE/6)*(TILE_SIZE/6)/2):
-	                        shutil.copy(SAVE_DIR+NAID+'/0/'+tile_folder+'/'+tile, SEGMENTATION_TILE_DIR+NAID+'/Inf/'+tile)
+	                    if np.sum(np.sum(mask[y0:y1,x0:x1])) >= (((TILE_SIZE/6)*(TILE_SIZE/6)/2)):
+	                        shutil.move(SAVE_DIR+NAID+'/0/'+tile_folder+'/'+tile, SEGMENTATION_TILE_DIR+NAID+'/Inf/'+tile)
 	                    elif np.sum(np.sum(mask[y0:y1,x0:x1])) == 0:
-	                        shutil.copy(SAVE_DIR+NAID+'/0/'+tile_folder+'/'+tile, SEGMENTATION_TILE_DIR+NAID+'/Heal/'+tile)
+	                        shutil.move(SAVE_DIR+NAID+'/0/'+tile_folder+'/'+tile, SEGMENTATION_TILE_DIR+NAID+'/Heal/'+tile)
 	                    else:
 	                        pass
 	                else:
@@ -595,8 +595,8 @@ def main():
     # Define arguments with their default values
     parser.add_argument("--tile_size", type=int, default=6144, help="Tile size")
     parser.add_argument("--gpu", type=int, default=0, help="GPU to be used for BG segmentation")
-    parser.add_argument("--wsi_dir", type=str, default='../Infarct_dataset/val/', help="Directory of Whole Slide Images")
-    parser.add_argument("--save_dir", type=str, default='../wsi_evaluation/inf_tiles/val/', help="Directory to save the patches for heatmaps")
+    parser.add_argument("--wsi_dir", type=str, default='../Infarct_dataset/github_test_luca/', help="Directory of Whole Slide Images")
+    parser.add_argument("--save_dir", type=str, default='inf_tiles/', help="Directory to save the patches for heatmaps")
     parser.add_argument("--cz_dir", type=str, default='annotation/', help="Directory for CZ annotation files")
     parser.add_argument("--mask_dir", type=str, default='masks/', help="Directory for mask files")
     parser.add_argument("--segmentation_tile_dir", type=str, default='seg_data/', help="Directory for patched images")
@@ -614,6 +614,7 @@ def main():
     print(f"Mask Directory: {args.mask_dir}")
     print(f"Segmentation Tile Directory: {args.segmentation_tile_dir}")
     print(f"WSI Tile Directory: {args.wsi_tile_dir}")
+                                                                 
 
     TILE_SIZE = args.tile_size
     gpu = args.gpu
@@ -662,19 +663,21 @@ def main():
     tile(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames)
     print("WSI tiled")
     
-    rename_tile(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR)
+    shutil.copytree(SAVE_DIR, 'temp/')                                                           
+                                                                 
+    rename_tile(TILE_SIZE,WSI_DIR,'temp/',CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR)
     print("Tiles renamed")
     
-    extract_annotation(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames)
+    extract_annotation(TILE_SIZE,WSI_DIR,'temp/',CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames)
     print("Annotations extracted")
     
-    build_maks(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames)
+    build_maks(TILE_SIZE,WSI_DIR,'temp/',CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames)
     print("Binary masks built")
 
-    find_BG(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,gpu)
+    find_BG(TILE_SIZE,WSI_DIR,'temp/',CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,gpu)
     print("Background tiles labeled")
 
-    classify_tiles(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames)
+    classify_tiles(TILE_SIZE,WSI_DIR,'temp/',CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames)
     print("Infarct/Un-infarcted tiles labeled")
 
 
