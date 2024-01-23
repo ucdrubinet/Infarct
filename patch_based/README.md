@@ -44,9 +44,7 @@ That is, input arguments can be specified to change the default behavior.
 
 ## Credit
 * [plaquebox-paper (original repo)](https://github.com/keiserlab/plaquebox-paper)
-* [plaquebox-paper (fork with some code dev)](https://github.com/KolinGuo/plaquebox-paper)
 * [BrainSec](https://github.com/ucdrubinet/BrainSec/tree/master)
-* [QuPath](https://qupath.github.io/)
 * [pyvips](https://libvips.github.io/pyvips/): Image processing for large
 TIFF-based image.
 * [gSLICr (GPU-based SLIC implementation)](https://github.com/carlren/gSLICr):
