@@ -47,4 +47,3 @@ That is, input arguments can be specified to change the default behavior.
 * [BrainSec](https://github.com/ucdrubinet/BrainSec/tree/master)
 * [pyvips](https://libvips.github.io/pyvips/): Image processing for large
 TIFF-based image.
-* [gSLICr (GPU-based SLIC implementation)](https://github.com/carlren/gSLICr):
