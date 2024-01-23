@@ -23,6 +23,7 @@ You should be able to replicate our environment. If there are issues with specif
 ## Instructions for replicating work
 * [preprocessing.py/] - First script to be executed. It will perform tiling and preprocessing raw WSI files. Requirements:
   * Raw WSI files (to be shared once the paper is released)
+  * [/utils/] scripts for WSI handling
   * Annotation XML files for .svs WSIs (to be shared once the paper is released)
   * [../gt.csv/] file with WSI-level ground-truth
   * BrainSec trained model for background segmentation (available [here](https://drive.google.com/file/d/1LfK_xfBdqoptYRFPx6qVMXPhfEO3HpBI/view?usp=sharing))
