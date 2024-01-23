@@ -126,9 +126,8 @@ def tile(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TI
 
 	        
 	        
-            vips_utils.save_and_tile(vips_img, os.path.splitext(imagename)[0] \
-                                     , SAVE_DIR, tile_size = TILE_SIZE)
-            print("Done Tiling: ", WSI_DIR + imagename)
+	        vips_utils.save_and_tile(vips_img, os.path.splitext(imagename)[0], SAVE_DIR, tile_size = TILE_SIZE)
+	        print("Done Tiling: ", WSI_DIR + imagename)
 	        
 	    elif imagename.split('.')[-1] == 'czi':
 	        NAID = imagename.split('.')[0]
@@ -140,13 +139,12 @@ def tile(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TI
 	            print("Pre resize: ", vips_img.height, "x", vips_img.width)
 	            
 	        
-                vips_utils.save_and_tile(vips_img, os.path.splitext(imagename)[0] \
-                                         , SAVE_DIR, tile_size = TILE_SIZE)
+	            vips_utils.save_and_tile(vips_img, os.path.splitext(imagename)[0], SAVE_DIR, tile_size = TILE_SIZE)
 
-                print("Done Tiling: ", WSI_DIR + imagename)
-                del vips_img
-                gc.collect()
-                print("Finish Delete", WSI_DIR + imagename)
+	            print("Done Tiling: ", WSI_DIR + imagename)
+	            del vips_img
+	            gc.collect()
+	            print("Finish Delete", WSI_DIR + imagename)
 	        except:
 	            print("Error in tiling")
 	        
@@ -182,7 +180,7 @@ def rename_tile(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR
 	                      SAVE_DIR+NAID+'/0/'+str(tile_folder)+'/'+str(y0)+'_'+str(x0)+'_'+str(y1)+'_'+str(x1)+'_'+tile_file)
 
 
-def extract_annotation(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR):
+def extract_annotation(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames):
 	for imagename in tqdm(imagenames[:]):
 	    start = time.time()
 	    if imagename.split('.')[-1] == 'svs':
@@ -478,8 +476,8 @@ def build_maks(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,
 	            pass
 
 
-def find_BG(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR):
-	MODEL_SEG_DIR = '../BrainSec.pt'
+def find_BG(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,gpu):
+	MODEL_SEG_DIR = 'BrainSec.pt'
 
 	seg_model = torchvision.models.resnet18()
 	seg_model.fc = nn.Linear(512, 3)
@@ -491,47 +489,47 @@ def find_BG(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI
 	seg_model.to(device)
 
 	for NAID in os.listdir(SAVE_DIR):
-    start = time.time()
-    print("Processing ", NAID)
-    
-    try:
-        os.makedirs(SEGMENTATION_TILE_DIR+NAID)
-    except:
-        pass
-    
-    try:
-        os.makedirs(SEGMENTATION_TILE_DIR+NAID+'/BG/')
-    except:
-        pass
-    
-    for tile_folder in os.listdir(SAVE_DIR+NAID+'/0/'):
-        for tile in os.listdir(SAVE_DIR+NAID+'/0/'+tile_folder):
-            seg_model.train(False)
-            
-            img = Image.open(SAVE_DIR+NAID+'/0/'+tile_folder+'/'+tile)
-            
-            img_tensor = transforms.ToTensor()(img)
-            img_tensor = transforms.Normalize(mean=[0.4409763317567454, 0.4016568471536302, 0.4988298669112181],
-                             std=[0.31297803931100737, 0.2990562933047881, 0.33747493782548915])(img_tensor)
-            img_tensor = TF.resize(img_tensor,512)
-            img_tensor = torch.reshape(img_tensor,(1,3,512,512))
-            img_tensor = img_tensor.cuda()
-            
-            predict = seg_model(img_tensor)
-            preds = F.sigmoid(predict)
-            _, indices = torch.max(predict.data, 1) # indices = 0:Background, 1:WM, 2:GM
-            indices = indices.type(torch.uint8)
-            running_seg =  indices.data.cpu()
-            
-            
-            if running_seg == 0:# or running_seg2 == 0:
-                shutil.move(SAVE_DIR+NAID+'/0/'+tile_folder+'/'+tile, SEGMENTATION_TILE_DIR+NAID+'/BG/'+tile)
-            else:
-                pass
-                #print("bg removed")
-                
-    print("processed in ", time.time()-start," seconds")
-    print("____________________________________________")
+	    start = time.time()
+	    print("Processing ", NAID)
+
+	    try:
+	        os.makedirs(SEGMENTATION_TILE_DIR+NAID)
+	    except:
+	        pass
+
+	    try:
+	        os.makedirs(SEGMENTATION_TILE_DIR+NAID+'/BG/')
+	    except:
+	        pass
+
+	    for tile_folder in os.listdir(SAVE_DIR+NAID+'/0/'):
+	        for tile in os.listdir(SAVE_DIR+NAID+'/0/'+tile_folder):
+	            seg_model.train(False)
+
+	            img = Image.open(SAVE_DIR+NAID+'/0/'+tile_folder+'/'+tile)
+
+	            img_tensor = transforms.ToTensor()(img)
+	            img_tensor = transforms.Normalize(mean=[0.4409763317567454, 0.4016568471536302, 0.4988298669112181],
+                                 std=[0.31297803931100737, 0.2990562933047881, 0.33747493782548915])(img_tensor)
+	            img_tensor = TF.resize(img_tensor,512)
+	            img_tensor = torch.reshape(img_tensor,(1,3,512,512))
+	            img_tensor = img_tensor.cuda()
+
+	            predict = seg_model(img_tensor)
+	            preds = F.sigmoid(predict)
+	            _, indices = torch.max(predict.data, 1) # indices = 0:Background, 1:WM, 2:GM
+	            indices = indices.type(torch.uint8)
+	            running_seg =  indices.data.cpu()
+
+
+	            if running_seg == 0:# or running_seg2 == 0:
+	                shutil.move(SAVE_DIR+NAID+'/0/'+tile_folder+'/'+tile, SEGMENTATION_TILE_DIR+NAID+'/BG/'+tile)
+	            else:
+	                pass
+                    #print("bg removed")
+
+	    print("processed in ", time.time()-start," seconds")
+	    print("____________________________________________")
 
 
 def classify_tiles(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames):
@@ -596,6 +594,7 @@ def main():
 
     # Define arguments with their default values
     parser.add_argument("--tile_size", type=int, default=6144, help="Tile size")
+    parser.add_argument("--gpu", type=int, default=0, help="GPU to be used for BG segmentation")
     parser.add_argument("--wsi_dir", type=str, default='../Infarct_dataset/val/', help="Directory of Whole Slide Images")
     parser.add_argument("--save_dir", type=str, default='../wsi_evaluation/inf_tiles/val/', help="Directory to save the patches for heatmaps")
     parser.add_argument("--cz_dir", type=str, default='annotation/', help="Directory for CZ annotation files")
@@ -608,6 +607,7 @@ def main():
 
     # Now you can use the arguments as variables in your code
     print(f"Tile Size: {args.tile_size}")
+    print(f"GPU: {args.gpu}")
     print(f"WSI Directory: {args.wsi_dir}")
     print(f"Save Directory: {args.save_dir}")
     print(f"CZ Directory: {args.cz_dir}")
@@ -616,59 +616,66 @@ def main():
     print(f"WSI Tile Directory: {args.wsi_tile_dir}")
 
     TILE_SIZE = args.tile_size
+    gpu = args.gpu
 
-	WSI_DIR = args.wsi_dir
+    WSI_DIR = args.wsi_dir
 
-	SAVE_DIR = args.save_dir
+    SAVE_DIR = args.save_dir
 
 
-	CZ_DIR = args.cz_dir
-	MASK_DIR = args.mask_dir
+    CZ_DIR = args.cz_dir
+    MASK_DIR = args.mask_dir
 
-	SEGMENTATION_TILE_DIR = args.segmentation_tile_dir
-	WSI_TILE_DIR = args.wsi_tile_dir
+    SEGMENTATION_TILE_DIR = args.segmentation_tile_dir
+    WSI_TILE_DIR = args.wsi_tile_dir
 
 
     if not os.path.exists(WSI_DIR):
-    	print("WSI folder does not exist, script should stop now")
-	else:
-	    if not os.path.exists(SEGMENTATION_TILE_DIR):
-	        print("Tile folder you provided us does not exist, being created now...")
-	        os.makedirs(SEGMENTATION_TILE_DIR)
-	        
-	    if not os.path.exists(WSI_TILE_DIR):
-	        print("Tile folder for WSI-level you provided us does not exist, being created now...")
-	        os.makedirs(WSI_TILE_DIR)
+        print("WSI folder does not exist, script should stop now")
+    else:
+        if not os.path.exists(SEGMENTATION_TILE_DIR):
+            print("Tile folder you provided us does not exist, being created now...")
+            os.makedirs(SEGMENTATION_TILE_DIR)
 
-	    if not os.path.exists(SAVE_DIR):
-	        print("Tile folder you provided us does not exist, being created now...")
-	        os.makedirs(SAVE_DIR)
+        if not os.path.exists(WSI_TILE_DIR):
+            print("Tile folder for WSI-level you provided us does not exist, being created now...")
+            os.makedirs(WSI_TILE_DIR)
 
-	    if not os.path.exists(CZ_DIR):
-	        print("Annotation folder you provided us does not exist, being created now...")
-	        os.makedirs(CZ_DIR)
+        if not os.path.exists(SAVE_DIR):
+            print("Tile folder you provided us does not exist, being created now...")
+            os.makedirs(SAVE_DIR)
 
-	    if not os.path.exists(MASK_DIR):
-	        print("Mask folder you provided us does not exist, being created now...")
-	        os.makedirs(MASK_DIR)
+        if not os.path.exists(CZ_DIR):
+            print("Annotation folder you provided us does not exist, being created now...")
+            os.makedirs(CZ_DIR)
 
-	    print("Found WSI folder... ")
-	    wsi_slides = os.listdir(WSI_DIR)
-	    imagenames = sorted(wsi_slides)
-	    print("All WSIs in wsi_dir: ")
-	    print(imagenames)
+        if not os.path.exists(MASK_DIR):
+            print("Mask folder you provided us does not exist, being created now...")
+            os.makedirs(MASK_DIR)
 
-	tile(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames)
+        print("Found WSI folder... ")
+        wsi_slides = os.listdir(WSI_DIR)
+        imagenames = sorted(wsi_slides)
+        print("All WSIs in wsi_dir: ")
+        print(imagenames)
 
-	rename_tile(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR)
+    tile(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames)
+    print("WSI tiled")
+    
+    rename_tile(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR)
+    print("Tiles renamed")
+    
+    extract_annotation(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames)
+    print("Annotations extracted")
+    
+    build_maks(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames)
+    print("Binary masks built")
 
-	extract_annotation(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR)
+    find_BG(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,gpu)
+    print("Background tiles labeled")
 
-	build_maks(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames)
-
-	find_BG(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR)
-
-	classify_tiles(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames)
+    classify_tiles(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames)
+    print("Infarct/Un-infarcted tiles labeled")
 
 
 if __name__ == "__main__":
