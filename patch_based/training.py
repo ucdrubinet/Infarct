@@ -14,6 +14,8 @@ from sklearn.metrics import classification_report, plot_confusion_matrix, balanc
 
 import numpy as np
 import statistics
+import argparse
+import os
 
 class Patches(Dataset):
     """Non-infarcted WSI dataset"""
@@ -124,7 +126,7 @@ def randomInit(m):
         torch.nn.init.zeros_(m.bias)
         
 
-def fit(model, loss_fn, optimizer, train_loader,train_loader_eval, val_loader, num_epochs, scheduler = None, stat_count=100, device=None,PATH = './saved_models/resnet18_Inf.pt'):
+def fit(MODEL,LR,model, loss_fn, optimizer, train_loader,train_loader_eval, val_loader, num_epochs, scheduler = None, stat_count=100, gpu=0,PATH = './saved_models/resnet18_Inf.pt'):
     curr_model_score = -1
     loss_epoch = []
     losses = []
@@ -136,11 +138,9 @@ def fit(model, loss_fn, optimizer, train_loader,train_loader_eval, val_loader, n
     bacc_val_epoch = []
     bacc_train_epoch = []
 
-    if device is not None:
-        model.to(device)
-    else:
-        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-        model.to(device)
+    
+    device = torch.device('cuda:'+str(gpu) if torch.cuda.is_available() else 'cpu')
+    model.to(gpu)
 
     randomInit(model)
 
@@ -193,7 +193,7 @@ def fit(model, loss_fn, optimizer, train_loader,train_loader_eval, val_loader, n
             val_predicted_full = []
             val_labels_full = []
             for data in val_loader:
-                images, labels = data[0].cuda(), data[1].cuda()
+                images, labels = data[0].cuda(gpu), data[1].cuda(gpu)
                 outputs = model(images)
 
                 _, val_predicted = torch.max(outputs.data, 1)
@@ -209,7 +209,7 @@ def fit(model, loss_fn, optimizer, train_loader,train_loader_eval, val_loader, n
             train_predicted_full = []
             train_labels_full = []
             for data in train_loader_eval:
-                images, labels = data[0].cuda(), data[1].cuda()
+                images, labels = data[0].cuda(gpu), data[1].cuda(gpu)
                 outputs = model(images)
 
                 _, train_predicted = torch.max(outputs.data, 1)
@@ -261,19 +261,19 @@ def fit(model, loss_fn, optimizer, train_loader,train_loader_eval, val_loader, n
         
     try:
         plt.plot(loss_epoch,label='Loss')
-        plt.savefig('loss_plot.png')
+        plt.savefig(MODEL+'_lr'+LR+'_'+'loss_plot.png')
 
         plt.plot(train_epoch,label='Train Acc')
         plt.plot(val_epoch,label='Val Acc')
-        plt.savefig('acc_plot.png')
+        plt.savefig(MODEL+'_lr'+LR+'_'+'acc_plot.png')
         
         plt.plot(bacc_train_epoch,label='Train bAcc')
         plt.plot(bacc_val_epoch,label='Val bAcc')
-        plt.savefig('bacc_plot.png')
+        plt.savefig(MODEL+'_lr'+LR+'_'+'bacc_plot.png')
         
         plt.plot(bacc_train_epoch,label='Train Infarct F1')
         plt.plot(f1_val_epoch,label='Val Infarct F1')
-        plt.savefig('f1_plot.png')
+        plt.savefig(MODEL+'_lr'+LR+'_'+'f1_plot.png')
     except:
         pass
 
@@ -286,7 +286,8 @@ def main():
     # Define arguments with their default values
     parser.add_argument("--model", type=str, default='r18', help="Choose model: r18, swinv2, or wrn50.")
     parser.add_argument("--segmentation_tile_dir", type=str, default='seg_data/', help="Directory for patched images")
-    parser.add_argument("--save_path", type=str, default='./saved_models/r18.pt', help="Where to save the model")
+    parser.add_argument("--save_path", type=str, default='./r18.pt', help="Where to save the model")
+    parser.add_argument("--gpu", type=int, default=0, help="GPU to be used for BG segmentation")
 
     parser.add_argument("--bs", type=int, default=5, help="Batch size")
     parser.add_argument("--ep", type=int, default=40, help="Epochs")
@@ -297,6 +298,7 @@ def main():
 
     # Now you can use the arguments as variables in your code
     print(f"Architecture for training: {args.model}")
+    print(f"GPU: {args.gpu}")
     print(f"Segmentation Tile Directory: {args.segmentation_tile_dir}")
     print(f"Path to saved model after training: {args.save_path}")
     print(f"Batch size: {args.bs}")
@@ -304,13 +306,14 @@ def main():
     print(f"Learning rate: {args.lr}")
 
     MODEL = args.model
-	SEGMENTATION_TILE_DIR = args.segmentation_tile_dir
-	SAVE_PATH = args.save_path
-	EPOCH = args.ep
-	BS = args.bs
-	LR = args.lr
+    SEGMENTATION_TILE_DIR = args.segmentation_tile_dir
+    gpu = args.gpu
+    SAVE_PATH = args.save_path
+    EPOCH = args.ep
+    BS = args.bs
+    LR = args.lr
 
-	train_transform = transforms.Compose([
+    train_transform = transforms.Compose([
         transforms.RandomHorizontalFlip(p=0.5),
         transforms.RandomVerticalFlip(p=0.5),
         transforms.ToTensor(),
@@ -319,79 +322,81 @@ def main():
     ])
 
 
-	test_transform = transforms.Compose([
-	        transforms.ToTensor(),
-	        transforms.Normalize(mean=[0.5962484, 0.5533902, 0.6344057],
-	                             std=[0.00056322647, 0.00075884577, 0.00043305202])
-	    ])
+    test_transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.5962484, 0.5533902, 0.6344057],
+                                 std=[0.00056322647, 0.00075884577, 0.00043305202])
+        ])
 
-	all_cases = os.listdir(SEGMENTATION_TILE_DIR)
+    all_cases = os.listdir(SEGMENTATION_TILE_DIR)
 
-	train_cases = []
-	val_cases = ['NA5137-16_HE','NA5137-17_HE','NA5137-18_HE','NA5057-16_HE','NA5057-17_HE','NA5057-18_HE',
-	             'NA5077-16_HE','NA5077-17_HE','NA5077-18_HE']
+    train_cases = []
+    val_cases = ['NA5137-16_HE','NA5137-17_HE','NA5137-18_HE','NA5057-16_HE','NA5057-17_HE','NA5057-18_HE',
+                 'NA5077-16_HE','NA5077-17_HE','NA5077-18_HE']
+    
+    #val_cases = ['NA5031-18_HE']
 
-	test_cases = ['NA5090-16_HE','NA5090-17_HE','NA5090-18_HE','NA5051-16_HE','NA5051-17_HE','NA5051-18_HE',
-	              'NA5146-16_HE','NA5146-17_HE','NA5146-18_HE','NA5063-16_HE','NA5063-17_HE','NA5063-18_HE',
-	              'NA5089-16_HE','NA5089-17_HE','NA5089-18_HE']
+    test_cases = ['NA5090-16_HE','NA5090-17_HE','NA5090-18_HE','NA5051-16_HE','NA5051-17_HE','NA5051-18_HE',
+                  'NA5146-16_HE','NA5146-17_HE','NA5146-18_HE','NA5063-16_HE','NA5063-17_HE','NA5063-18_HE',
+                  'NA5089-16_HE','NA5089-17_HE','NA5089-18_HE']
 
-	delete_cases = ['NA5116-16_HE','NA5116-17_HE','NA5116-18_HE']
-
-
-	all_cases = list(set(all_cases) - set(delete_cases))
-
-
-	train_cases = list(set(all_cases) - set(test_cases))
-	train_cases = list(set(train_cases) - set(val_cases))
-
-	print("Working on train set")
-	trainset = Patches(SEGMENTATION_TILE_DIR,train_cases,train_transform)
-
-	print("Working on validation set")
-	valset = Patches(SEGMENTATION_TILE_DIR,val_cases,test_transform)
+    delete_cases = ['NA5116-16_HE','NA5116-17_HE','NA5116-18_HE']
 
 
-	batch_size = BS
-	num_epochs = EPOCH
-
-	loss_f = nn.CrossEntropyLoss()
+    all_cases = list(set(all_cases) - set(delete_cases))
 
 
-	if MODEL == 'wrn50':
-		model = torchvision.models.wide_resnet50_2(pretrained =True)
-		model.fc = nn.Linear(2048, 3) 
-	elif MODEL == 'swinv2':
-		model = torchvision.models.swin_v2_t(weights='IMAGENET1K_V1')
-		model.head = nn.Linear(768,3)
-	elif MODEL == 'r18':
-		model = torchvision.models.resnet18(pretrained =True)
-		model.fc = nn.Linear(512, 3)
-	else:
-		print("Model name not recognized, using resnet18")
-		model = torchvision.models.resnet18(pretrained =True)
-		model.fc = nn.Linear(512, 3) 
+    train_cases = list(set(all_cases) - set(test_cases))
+    train_cases = list(set(train_cases) - set(val_cases))
 
-	optimizer = torch.optim.Adam(model.parameters(),lr = 0.01)
+    print("Working on train set")
+    trainset = Patches(SEGMENTATION_TILE_DIR,train_cases,train_transform)
 
-	target = trainset.targets
-
-	class_sample_count = np.array(
-	    [len(np.where(target == t)[0]) for t in np.unique(target)])
-	weight = 1. / class_sample_count
-	samples_weight = np.array([weight[t] for t in target])
+    print("Working on validation set")
+    valset = Patches(SEGMENTATION_TILE_DIR,val_cases,test_transform)
 
 
-	sampler = torch.utils.data.sampler.WeightedRandomSampler(
-	                weights=samples_weight,
-	                num_samples=len(trainset), replacement=True)
+    batch_size = BS
+    num_epochs = EPOCH
+
+    loss_f = nn.CrossEntropyLoss()
 
 
-	train_loader = DataLoader(trainset, batch_size=batch_size, sampler=sampler)
+    if MODEL == 'wrn50':
+        model = torchvision.models.wide_resnet50_2(pretrained =True)
+        model.fc = nn.Linear(2048, 3) 
+    elif MODEL == 'swinv2':
+        model = torchvision.models.swin_v2_t(weights='IMAGENET1K_V1')
+        model.head = nn.Linear(768,3)
+    elif MODEL == 'r18':
+        model = torchvision.models.resnet18(pretrained =True)
+        model.fc = nn.Linear(512, 3)
+    else:
+        print("Model name not recognized, using resnet18")
+        model = torchvision.models.resnet18(pretrained =True)
+        model.fc = nn.Linear(512, 3) 
 
-	train_loader_eval = train_loader = DataLoader(trainset, batch_size=batch_size, shuffle=True)
-	val_loader = DataLoader(valset,batch_size=batch_size,shuffle=True)
+    optimizer = torch.optim.Adam(model.parameters(),lr = 0.01)
 
-	loss_epoch, train_epoch, val_epoch = fit(model, loss_f, optimizer, train_loader,train_loader_eval, val_loader, num_epochs,PATH = SAVE_PATH)
+    target = trainset.targets
+
+    class_sample_count = np.array(
+        [len(np.where(target == t)[0]) for t in np.unique(target)])
+    weight = 1. / class_sample_count
+    samples_weight = np.array([weight[t] for t in target])
+
+
+    sampler = torch.utils.data.sampler.WeightedRandomSampler(
+                    weights=samples_weight,
+                    num_samples=len(trainset), replacement=True)
+
+
+    train_loader = DataLoader(trainset, batch_size=batch_size, sampler=sampler)
+
+    train_loader_eval = train_loader = DataLoader(trainset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(valset,batch_size=batch_size,shuffle=True)
+
+    loss_epoch, train_epoch, val_epoch = fit(MODEL,LR,model, loss_f, optimizer, train_loader,train_loader_eval, val_loader, num_epochs,gpu=gpu,PATH = SAVE_PATH)
 
 
 if __name__ == "__main__":

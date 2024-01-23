@@ -285,7 +285,7 @@ def fill_contours(arr):
 
 
 def build_maks(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI_TILE_DIR,imagenames):
-	gt_df = pd.read_csv('../gt.csv')
+	gt_df = pd.read_csv('gt.csv')
 
 	for imagename in tqdm(imagenames[:]):
 	    start = time.time()
@@ -485,7 +485,7 @@ def find_BG(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI
 	checkpoint = torch.load(MODEL_SEG_DIR)
 	seg_model.load_state_dict(checkpoint['model_state_dict'])
 
-	device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+	device = torch.device('cuda:'+str(gpu) if torch.cuda.is_available() else 'cpu')
 	seg_model.to(device)
 
 	for NAID in os.listdir(SAVE_DIR):
@@ -513,7 +513,7 @@ def find_BG(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,WSI
                                  std=[0.31297803931100737, 0.2990562933047881, 0.33747493782548915])(img_tensor)
 	            img_tensor = TF.resize(img_tensor,512)
 	            img_tensor = torch.reshape(img_tensor,(1,3,512,512))
-	            img_tensor = img_tensor.cuda()
+	            img_tensor = img_tensor.cuda(gpu)
 
 	            predict = seg_model(img_tensor)
 	            preds = F.sigmoid(predict)
@@ -572,7 +572,7 @@ def classify_tiles(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_
 	                x1 = int(tile.split('_')[3])
 
 	                if wsi_gt == 1:
-	                    if np.sum(np.sum(mask[y0:y1,x0:x1])) >= ((512*512)/2):
+	                    if np.sum(np.sum(mask[y0:y1,x0:x1])) >= (((TILE_SIZE/6)*(TILE_SIZE/6)/2):
 	                        shutil.copy(SAVE_DIR+NAID+'/0/'+tile_folder+'/'+tile, SEGMENTATION_TILE_DIR+NAID+'/Inf/'+tile)
 	                    elif np.sum(np.sum(mask[y0:y1,x0:x1])) == 0:
 	                        shutil.copy(SAVE_DIR+NAID+'/0/'+tile_folder+'/'+tile, SEGMENTATION_TILE_DIR+NAID+'/Heal/'+tile)
