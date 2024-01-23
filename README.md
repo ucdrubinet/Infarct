@@ -11,8 +11,6 @@ please submit a GitHub issue.
 
 ## Credit
 * [plaquebox-paper (original repo)](https://github.com/keiserlab/plaquebox-paper)
-* [plaquebox-paper (fork with some code dev)](https://github.com/KolinGuo/plaquebox-paper)
 * [BrainSec](https://github.com/ucdrubinet/BrainSec)
-* [QuPath](https://qupath.github.io/)
 * [pyvips](https://libvips.github.io/pyvips/): Image processing for large
 TIFF-based image.
