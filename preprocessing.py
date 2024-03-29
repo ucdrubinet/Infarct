@@ -384,7 +384,7 @@ def build_maks(TILE_SIZE,WSI_DIR,SAVE_DIR,CZ_DIR,MASK_DIR,SEGMENTATION_TILE_DIR,
 	                #vips_img = grabCZI(WSI_DIR + imagename)
 	                
 	                
-	                info_path = '/data/Infarct/Infarct_Codes/patched_512/'+str(NAID)+'/vips-properties.xml'
+	                info_path = SAVE_DIR+str(NAID)+'/vips-properties.xml'
 	    
 	                print("info path = ", info_path)
 
