@@ -291,7 +291,7 @@ def main():
 
     parser.add_argument("--bs", type=int, default=5, help="Batch size")
     parser.add_argument("--ep", type=int, default=40, help="Epochs")
-    parser.add_argument("--lr", type=int, default=0.01, help="Learning rate")
+    parser.add_argument("--lr", type=float, default=0.01, help="Learning rate")
 
     # Parse the arguments
     args = parser.parse_args()
