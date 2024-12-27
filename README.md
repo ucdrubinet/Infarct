@@ -1,4 +1,6 @@
-# Infarct GitHub (under construction)
+# Infarct GitHub
+
+Instructions to be added soon.
 
 
 ## Authors / Contributors
